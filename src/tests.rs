@@ -197,3 +197,82 @@ fn closure_boxing() {
         assert_eq!(i, func());
     }
 }
+
+pub mod drop_test {
+    use std::sync::{
+        atomic::{Ordering, AtomicI64},
+        Arc,
+    };
+
+    pub use std::mem::drop;
+
+    #[derive(Clone)]
+    pub struct DropTestCounter { alive_count: Arc<AtomicI64> }
+
+    pub struct DropTestToken {
+        alive_count: Arc<AtomicI64>,
+        already_dropped: bool,
+    }
+
+    impl DropTestCounter {
+        pub fn new() -> Self {
+            DropTestCounter {
+                alive_count: Arc::new(AtomicI64::new(0))
+            }
+        }
+
+        pub fn token(&self) -> DropTestToken {
+            self.alive_count.fetch_add(1, Ordering::Relaxed);
+            DropTestToken {
+                alive_count: self.alive_count.clone(),
+                already_dropped: false,
+            }
+        }
+
+        pub fn check(&self) {
+            assert_eq!(
+                self.alive_count.load(Ordering::Relaxed),
+                0,
+                "dangling pointer detected",
+            );
+        }
+    }
+
+    impl Drop for DropTestToken {
+        fn drop(&mut self) {
+            if self.already_dropped {
+                panic!("double free detected");
+            }
+
+            self.already_dropped = true;
+            self.alive_count.fetch_sub(1, Ordering::Relaxed);
+        }
+    }
+}
+
+#[test]
+fn closure_drop_test() {
+    use drop_test::*;
+
+    #[inline(never)]
+    fn closure(n: usize, token: DropTestToken) -> impl Fn() -> usize {
+        move || {
+            let token = &token;
+            n
+        }
+    }
+
+    let counter = DropTestCounter::new();
+
+    let mut vec: HeteroSizedVec<dyn Fn() -> usize> = HeteroSizedVec::new();
+    for n in 0..10 {
+        vec.push_value(closure(n, counter.token()));
+    }
+
+    for (i, func) in vec.iter().enumerate() {
+        assert_eq!(i, func());
+    }
+
+    drop(vec);
+    counter.check();
+}
