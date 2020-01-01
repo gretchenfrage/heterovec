@@ -1,6 +1,6 @@
 [package]
 name = "heterovec"
-version = "0.1.0"
+version = "0.1.1g"
 authors = ["Phoenix Kahlo <kahlo.phoenix@gmail.com>"]
 edition = "2018"
 
