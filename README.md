@@ -28,7 +28,7 @@ extern crate heterovec;
 use heterovec::HeteroSizedVec;
 
 fn main() {
-    let mut functions: HeteroSizedVec<dyn Fn(i32) -> i32> =
+    let mut funcs: HeteroSizedVec<dyn Fn(i32) -> i32> =
         HeteroSizedVec::new();
     
     fn adder(x: i32) -> impl Fn(i32) -> i32 {
@@ -39,11 +39,11 @@ fn main() {
         move |y| x * y
     }
     
-    functions.push_value(adder(1));       // functions[0]
-    functions.push_value(adder(2));       // functions[1]
-    functions.push_value(adder(3));       // functions[2]
-    functions.push_value(multiplier(10)); // functions[3]
-    functions.push_value(multiplier(16)); // functions[4]
+    funcs.push_value(adder(1));       // functions[0]
+    funcs.push_value(adder(2));       // functions[1]
+    funcs.push_value(adder(3));       // functions[2]
+    funcs.push_value(multiplier(10)); // functions[3]
+    funcs.push_value(multiplier(16)); // functions[4]
     
     for (i, &(input, output)) in [
         (10, 11),  // 10 + 1  == 11
@@ -52,7 +52,7 @@ fn main() {
         (7, 70),   // 7 * 10  == 70
         (32, 512), // 32 * 16 == 512
     ].iter().enumerate() {
-        assert_eq!(functions[i](input), output);
+        assert_eq!(funcs[i](input), output);
     }
 }
 ```
