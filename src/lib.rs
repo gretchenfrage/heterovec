@@ -52,8 +52,11 @@ pub struct HeteroSizedVec<T: ?Sized> {
     // start-indices of each element within storage
     mem_indices: Vec<usize>,
     // handlers for dropping each element
+    //
     // the given pointer is to the start address of the element
-    drop_handlers: Vec<fn(*mut u8)>,
+    // and the second element is fat pointer metadata
+    // unless the pointers are not fat, in which case it will be zero
+    drop_handlers: Vec<fn(*mut u8, usize)>,
     // the runtime size of each element
     // this is used for moving them to the heap
     elems_size: Vec<usize>,

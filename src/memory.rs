@@ -74,7 +74,7 @@ impl<T: ?Sized> HeteroSizedVec<T> {
             let elem_size:  usize  = elem.elem_size();
             let elem_align: usize  = elem.elem_align();
             let elem_ptr: *const T = elem.elem_ptr();
-            let elem_drop_handler: fn(*mut u8) = elem.elem_drop_handler();
+            let elem_drop_handler: fn(*mut u8, usize) = elem.elem_drop_handler();
 
             // push the fat pointer meta,
             // handle the case that the pointer isn't actually fat
@@ -281,11 +281,29 @@ impl<T: ?Sized> Drop for HeteroSizedVec<T> {
     fn drop(&mut self) {
         // drop elements
         unsafe {
-            for (offset, drop_handler) in self.drop_handlers.iter().enumerate() {
-                let ptr: *mut u8 = self.storage.as_mut_ptr()
-                    .offset(offset as isize);
+            if pointer_is_fat::<T>() {
+                for (offset, (destructor, meta)) in Iterator::zip(
+                    self.mem_indices.iter().copied(),
+                    Iterator::zip(
+                        self.drop_handlers.iter().copied(),
+                        self.ptr_meta.iter().copied(),
+                    ),
+                ) {
+                    let ptr: *mut u8 = self.storage.as_mut_ptr()
+                        .offset(offset as isize);
 
-                drop_handler(ptr)
+                    destructor(ptr, meta);
+                }
+            } else {
+                for (offset, destructor) in Iterator::zip(
+                    self.mem_indices.iter().copied(),
+                    self.drop_handlers.iter().copied(),
+                ) {
+                    let ptr: *mut u8 = self.storage.as_mut_ptr()
+                        .offset(offset as isize);
+
+                    destructor(ptr, 0);
+                }
             }
         }
     }

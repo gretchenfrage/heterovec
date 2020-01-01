@@ -21,7 +21,7 @@ pub unsafe trait HeteroSizedPush<T: ?Sized> {
 
     unsafe fn elem_ptr(&self) -> *const T;
 
-    unsafe fn elem_drop_handler(&self) -> fn(*mut u8);
+    unsafe fn elem_drop_handler(&self) -> fn(*mut u8, usize);
 
     /// Assume that ownership of the pointee has been taken through unsafe
     /// means, but if there is some destructable wrapper around that
@@ -45,8 +45,8 @@ unsafe impl<T: ?Sized, E: Unsize<T>> HeteroSizedPush<T> for InPlace<E> {
         &self.0 as &T as *const T
     }
 
-    unsafe fn elem_drop_handler(&self) -> fn(*mut u8) {
-        |data| {
+    unsafe fn elem_drop_handler(&self) -> fn(*mut u8, usize) {
+        |data, _| {
             drop_in_place(transmute::<
                 *mut u8,
                 &mut E,
@@ -70,8 +70,8 @@ unsafe impl<'a, I: Copy> HeteroSizedPush<[I]> for &'a [I] {
         *self as *const [I]
     }
 
-    unsafe fn elem_drop_handler(&self) -> fn(*mut u8) {
-        |_| () // we are copy, so no need to drop
+    unsafe fn elem_drop_handler(&self) -> fn(*mut u8, usize) {
+        |_, _| () // we are copy, so no need to drop
     }
 
     unsafe fn outer_drop(&mut self) {}
@@ -90,7 +90,7 @@ unsafe impl<I> HeteroSizedPush<[I]> for Vec<I> {
         self.as_slice() as *const [I]
     }
 
-    unsafe fn elem_drop_handler(&self) -> fn(*mut u8) {
+    unsafe fn elem_drop_handler(&self) -> fn(*mut u8, usize) {
         unimplemented!()
     }
 
@@ -112,8 +112,8 @@ unsafe impl<'a> HeteroSizedPush<str> for &'a str {
         *self as *const str
     }
 
-    unsafe fn elem_drop_handler(&self) -> fn(*mut u8) {
-        |_| () // no destructor needed for str
+    unsafe fn elem_drop_handler(&self) -> fn(*mut u8, usize) {
+        |_, _| () // no destructor needed for str
     }
 
     unsafe fn outer_drop(&mut self) {}
@@ -132,7 +132,7 @@ unsafe impl<T: ?Sized> HeteroSizedPush<T> for Box<dyn HeteroSizedPush<T>> {
         Box::as_ref(self).elem_ptr()
     }
 
-    unsafe fn elem_drop_handler(&self) -> fn(*mut u8) {
+    unsafe fn elem_drop_handler(&self) -> fn(*mut u8, usize) {
         Box::as_ref(self).elem_drop_handler()
     }
 
