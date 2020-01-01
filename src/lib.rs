@@ -2,6 +2,7 @@
 #![feature(arbitrary_self_types)]
 #![feature(coerce_unsized)]
 #![feature(new_uninit)]
+#![feature(slice_from_raw_parts)]
 #![allow(unused_parens)]
 
 use std::marker::PhantomData;

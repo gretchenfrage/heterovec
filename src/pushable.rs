@@ -7,7 +7,10 @@ use std::{
         transmute_copy,
         ManuallyDrop,
     },
-    ptr::drop_in_place,
+    ptr::{
+        drop_in_place,
+        slice_from_raw_parts_mut,
+    },
     marker::Unsize,
 };
 
@@ -91,11 +94,26 @@ unsafe impl<I> HeteroSizedPush<[I]> for Vec<I> {
     }
 
     unsafe fn elem_drop_handler(&self) -> fn(*mut u8, usize) {
-        unimplemented!()
+        // this relies on the fat pointer meta in an array slice being the length in elements
+        |start, len| unsafe {
+            // drop each element
+            let elems: &mut [I] = &mut *slice_from_raw_parts_mut(
+                start as *mut I,
+                len,
+            );
+            for elem in elems {
+                drop_in_place(elem);
+            }
+        }
     }
 
     unsafe fn outer_drop(&mut self) {
-        unimplemented!()
+        // this is similar to how we are handling the box
+
+        drop(transmute_copy::<
+            Vec<I>,
+            Vec<ManuallyDrop<I>>,
+        >);
     }
 }
 

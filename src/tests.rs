@@ -52,6 +52,23 @@ fn array_copy_slice_basic() {
 }
 
 #[test]
+fn array_from_vec_basic() {
+    let mut vec: HeteroSizedVec<[usize]> = HeteroSizedVec::new();
+
+    vec.push(vec![0_usize]);
+    vec.push(vec![1_usize, 2]);
+    vec.push(vec![3_usize, 4, 5]);
+    vec.push(vec![6_usize, 7, 8, 9]);
+    vec.push(vec![10_usize, 11, 12, 13, 14]);
+
+    assert_eq!(&vec[0], &[0]);
+    assert_eq!(&vec[1], &[1, 2]);
+    assert_eq!(&vec[2], &[3, 4, 5]);
+    assert_eq!(&vec[3], &[6, 7, 8, 9]);
+    assert_eq!(&vec[4], &[10, 11, 12, 13, 14]);
+}
+
+#[test]
 fn str_basic() {
     let mut vec: HeteroSizedVec<str> = HeteroSizedVec::new();
 
@@ -106,6 +123,38 @@ fn mutate_arrays_copy_slice() {
     vec.push(&[1_u8, 2] as &[_]);
     vec.push(&[3_u8, 4, 5] as &[_]);
     vec.push(&[6_u8, 7, 8, 9] as &[_]);
+
+    let mut i = 0;
+    for array in &mut vec {
+        for elem in array {
+            *elem = i;
+            i += 1;
+        }
+    }
+
+    for array in &mut vec {
+        for elem in array {
+            *elem *= 2;
+        }
+    }
+
+    let mut i = 0;
+    for array in &vec {
+        for &elem in array {
+            assert_eq!(elem, i * 2);
+            i += 1;
+        }
+    }
+}
+
+#[test]
+fn mutate_arrays_from_vec() {
+    let mut vec: HeteroSizedVec<[u8]> = HeteroSizedVec::new();
+
+    vec.push(vec![0]);
+    vec.push(vec![1, 2]);
+    vec.push(vec![3, 4, 5]);
+    vec.push(vec![6, 7, 8, 9]);
 
     let mut i = 0;
     for array in &mut vec {

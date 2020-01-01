@@ -277,6 +277,8 @@ impl<T: ?Sized> HeteroSizedVec<T> {
     }
 }
 
+
+
 impl<T: ?Sized> Drop for HeteroSizedVec<T> {
     fn drop(&mut self) {
         // drop elements
