@@ -28,7 +28,8 @@ extern crate heterovec;
 use heterovec::HeteroSizedVec;
 
 fn main() {
-    let mut functions: HeteroSizedVec<dyn Fn(i32) -> i32> = HeteroSizedVec::new();
+    let mut functions: HeteroSizedVec<dyn Fn(i32) -> i32> =
+        HeteroSizedVec::new();
     
     fn adder(x: i32) -> impl Fn(i32) -> i32 {
         move |y| x + y
@@ -58,19 +59,21 @@ fn main() {
 
 Arrays:
 
-```rust 
+```rust
 extern crate heterovec;
 use heterovec::HeteroSizedVec;
 
 fn main() {
-    let mut arrays: HeteroSizedVec<[u32]> = HeteroSizedVec::new();
+    let mut arrays: HeteroSizedVec<[u32]> = 
+        HeteroSizedVec::new();
     
     arrays.push_value([1]);
     arrays.push_value([2, 3]);
     arrays.push_value([4, 5, 6]);
     arrays.push_value([7, 8, 9, 10]);
     
-    let elem_5: Vec<u32> = (0_u32..=99).collect::<Vec<u32>>();
+    let elem_5: Vec<u32> = 
+        (0_u32..=99).collect::<Vec<u32>>();
     arrays.push(elem_5);
     
     // mutate the elements
@@ -103,19 +106,22 @@ extern crate heterovec;
 use heterovec::HeteroSizedVec;
 
 fn main() {
-    let mut strs: HeteroSizedVec<str> = HeteroSizedVec::new();
+    let mut strs: HeteroSizedVec<str> = 
+        HeteroSizedVec::new();
     
     strs.push("hello");
     strs.push("world");
     strs.push(format!("{}+{}={}", 2, 2, 4).as_ref());
  
-    // although the elements are not separate `String` allocations, they are owned.
+    // although the elements are not separate `String` 
+    // allocations, they are owned.
+    //
     // (they are not static string)
     
     {
         let elem: &mut str = &mut strs[1];
         
-        // the unsafety comes from mutating a `str`, not from `heterovec`
+        // mutate the str in-place
         unsafe { elem.as_bytes_mut()[4] = b'l' };
     }
     
