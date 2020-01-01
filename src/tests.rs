@@ -199,6 +199,47 @@ fn closure_boxing() {
 }
 
 pub mod drop_test {
+    #[test]
+    #[should_panic]
+    fn dangling_pointer_should_panic() {
+        use std::mem::forget;
+
+        let counter = DropTestCounter::new();
+        let token = counter.token();
+        forget(token);
+        counter.check();
+    }
+
+    #[test]
+    #[should_panic]
+    fn double_free_should_panic() {
+        use std::ptr::drop_in_place;
+        use std::mem::drop;
+
+        let counter = DropTestCounter::new();
+        let mut token = counter.token();
+
+        unsafe {
+            drop_in_place(&mut token);
+            drop(token);
+        }
+
+        counter.check();
+    }
+
+    #[test]
+    fn drop_test_sanity_check() {
+        let counter = DropTestCounter::new();
+
+        let mut tokens = Vec::new();
+        for _ in 0..100 {
+            tokens.push(counter.token());
+        }
+        drop(tokens);
+
+        counter.check();
+    }
+
     use std::sync::{
         atomic::{Ordering, AtomicI64},
         Arc,
@@ -274,5 +315,26 @@ fn closure_drop_test() {
     }
 
     drop(vec);
+    counter.check();
+}
+
+#[test]
+fn array_drop_test() {
+    use drop_test::*;
+
+    let counter = DropTestCounter::new();
+
+    let mut vec: HeteroSizedVec<[DropTestToken]> = HeteroSizedVec::new();
+
+    for i in 0..100 {
+        let mut elem_vec: Vec<DropTestToken> = Vec::new();
+        for _ in 0..i {
+            elem_vec.push(counter.token());
+        }
+        vec.push(elem_vec);
+    }
+
+    drop(vec);
+
     counter.check();
 }
