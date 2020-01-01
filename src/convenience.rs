@@ -1,5 +1,8 @@
 
-use crate::HeteroSizedVec;
+use crate::{
+    HeteroSizedVec,
+    pushable::InPlace,
+};
 
 use std::{
     ops::{
@@ -8,7 +11,21 @@ use std::{
         Range,
     },
     hint::unreachable_unchecked,
+    marker::Unsize,
+    fmt::{
+        self,
+        Debug,
+        Display,
+        Formatter,
+    },
 };
+
+impl<T: ?Sized> HeteroSizedVec<T> {
+    /// Push some value which unsizes to the element type.
+    pub fn push_value<E: Unsize<T>>(&mut self, elem: E) {
+        self.push(InPlace(elem));
+    }
+}
 
 // index operator
 
@@ -117,5 +134,18 @@ impl<'a, T: ?Sized> IntoIterator for &'a mut HeteroSizedVec<T> {
 
     fn into_iter(self) -> Self::IntoIter {
         self.iter_mut()
+    }
+}
+
+// debug
+
+impl<T: ?Sized> Debug for HeteroSizedVec<T>
+where
+    for<'a> &'a T: Debug
+{
+    fn fmt(&self, f: &mut Formatter) -> fmt::Result {
+        f.debug_list()
+            .entries(self)
+            .finish()
     }
 }

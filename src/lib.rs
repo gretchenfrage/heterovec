@@ -15,6 +15,9 @@ mod memory;
 /// Ease of use functions and implementations.
 mod convenience;
 
+#[cfg(test)]
+pub mod tests;
+
 // public-facing re-exports
 
 #[doc(inline)]
@@ -36,7 +39,7 @@ pub mod iter {
 /// This collection supports few operations. Important ones are:
 ///
 /// - Pushing an element
-/// - Indexing by fat pointer
+/// - Indexing
 /// - Conversion into a `Vec` of boxes
 ///
 /// This supports elements such as trait objects, `str`, and `[T]`.

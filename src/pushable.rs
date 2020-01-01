@@ -32,10 +32,7 @@ pub unsafe trait HeteroSizedPush<T: ?Sized> {
 /// Used to directly push an element onto a `HeteroSizedVec` from the stack.
 pub struct InPlace<E>(pub E);
 
-unsafe impl<
-    T: ?Sized,
-    E: Unsize<T>
-> HeteroSizedPush<T> for InPlace<E> {
+unsafe impl<T: ?Sized, E: Unsize<T>> HeteroSizedPush<T> for InPlace<E> {
     unsafe fn elem_size(&self) -> usize {
         size_of::<E>()
     }
@@ -78,6 +75,28 @@ unsafe impl<'a, I: Copy> HeteroSizedPush<[I]> for &'a [I] {
     }
 
     unsafe fn outer_drop(&mut self) {}
+}
+
+unsafe impl<I> HeteroSizedPush<[I]> for Vec<I> {
+    unsafe fn elem_size(&self) -> usize {
+        self.len() * size_of::<I>()
+    }
+
+    unsafe fn elem_align(&self) -> usize {
+        align_of::<I>()
+    }
+
+    unsafe fn elem_ptr(&self) -> *const [I] {
+        self.as_slice() as *const [I]
+    }
+
+    unsafe fn elem_drop_handler(&self) -> fn(*mut u8) {
+        unimplemented!()
+    }
+
+    unsafe fn outer_drop(&mut self) {
+        unimplemented!()
+    }
 }
 
 unsafe impl<'a> HeteroSizedPush<str> for &'a str {
