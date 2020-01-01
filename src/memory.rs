@@ -176,7 +176,7 @@ impl<T: ?Sized> HeteroSizedVec<T> {
     }
 
     /// Convert into a vector of boxes.
-    pub fn into_boxed_vec(self) -> Vec<Box<T>> {
+    pub fn into_box_vec(self) -> Vec<Box<T>> {
         unsafe {
             if pointer_is_fat::<T>() {
                 self.into_boxed_vec_fat()
@@ -276,8 +276,6 @@ impl<T: ?Sized> HeteroSizedVec<T> {
         boxed_vec
     }
 }
-
-
 
 impl<T: ?Sized> Drop for HeteroSizedVec<T> {
     fn drop(&mut self) {

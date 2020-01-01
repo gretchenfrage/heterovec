@@ -179,3 +179,21 @@ fn mutate_arrays_from_vec() {
     }
 }
 
+#[test]
+fn closure_boxing() {
+    #[inline(never)]
+    fn closure(n: usize) -> impl Fn() -> usize {
+        move || n
+    }
+
+    let mut vec: HeteroSizedVec<dyn Fn() -> usize> = HeteroSizedVec::new();
+    for n in 0..10 {
+        vec.push_value(closure(n));
+    }
+
+    let vec2: Vec<Box<dyn Fn() -> usize>> = vec.into_box_vec();
+
+    for (i, func) in vec2.iter().enumerate() {
+        assert_eq!(i, func());
+    }
+}
