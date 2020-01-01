@@ -352,3 +352,46 @@ fn array_drop_test() {
 
     counter.check();
 }
+
+#[test]
+fn test_alignment() {
+    pub trait Align {
+        fn addr(&self) -> usize;
+
+        fn align(&self) -> usize;
+    }
+
+    macro_rules! align_impl {
+        ($align:expr)=>{{
+            #[repr(align($align))]
+            struct SpecialAlign(u8);
+
+            impl Align for SpecialAlign {
+                fn addr(&self) -> usize {
+                    self as *const Self as usize
+                }
+
+                fn align(&self) -> usize { $align }
+            }
+
+            SpecialAlign(0)
+        }};
+    }
+
+    let mut vec: HeteroSizedVec<dyn Align> = HeteroSizedVec::new();
+
+    macro_rules! align_push_each {
+        ($vec:expr, [$($align:expr),* $(,)?])=>{
+            $(
+            $vec.push_value(align_impl!($align));
+            )*
+        };
+    }
+
+    align_push_each!(vec, [2, 16, 32, 2, 2, 1024, 16, 16, 256, 32, 4]);
+
+    for elem in &vec {
+        assert!(elem.addr() % elem.align() == 0);
+    }
+
+}
