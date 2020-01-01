@@ -198,6 +198,20 @@ fn closure_boxing() {
     }
 }
 
+#[test]
+#[should_panic]
+fn index_out_of_bounds() {
+    let mut vec: HeteroSizedVec<str> = HeteroSizedVec::new();
+
+    for _ in 0..3 {
+        vec.push("hello world");
+    }
+
+    for i in 0..4 {
+        let _ = &vec[i];
+    }
+}
+
 pub mod drop_test {
     #[test]
     #[should_panic]

@@ -1,9 +1,13 @@
+#![feature(external_doc)]
 #![feature(unsize)]
 #![feature(arbitrary_self_types)]
 #![feature(coerce_unsized)]
 #![feature(new_uninit)]
 #![feature(slice_from_raw_parts)]
+
 #![allow(unused_parens)]
+
+#![doc(include = "../README.md")]
 
 use std::marker::PhantomData;
 

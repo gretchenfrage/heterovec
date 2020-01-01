@@ -95,7 +95,7 @@ unsafe impl<I> HeteroSizedPush<[I]> for Vec<I> {
 
     unsafe fn elem_drop_handler(&self) -> fn(*mut u8, usize) {
         // this relies on the fat pointer meta in an array slice being the length in elements
-        |start, len| unsafe {
+        |start, len| {
             // drop each element
             let elems: &mut [I] = &mut *slice_from_raw_parts_mut(
                 start as *mut I,
