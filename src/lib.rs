@@ -15,11 +15,21 @@ mod memory;
 /// Ease of use functions and implementations.
 mod convenience;
 
+// public-facing re-exports
+
 #[doc(inline)]
 pub use self::pushable::{
     HeteroSizedPush,
     InPlace,
 };
+/// Iterators.
+pub mod iter {
+    #[doc(inline)]
+    pub use crate::convenience::{
+        Iter,
+        IterMut,
+    };
+}
 
 /// Dense vector of an unsized type.
 ///
