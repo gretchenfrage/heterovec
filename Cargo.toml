@@ -4,4 +4,8 @@ version = "0.1.0"
 authors = ["Phoenix Kahlo <kahlo.phoenix@gmail.com>"]
 edition = "2018"
 
-[dependencies]
+description = "In-place vector of dynamically sized type"
+readme = "README.md"
+categories = ["memory-management"]
+license = "MIT"
+repository = "https://github.com/gretchenfrage/heterovec"
